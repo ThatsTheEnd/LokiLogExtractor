@@ -104,6 +104,45 @@ public class LokiClientTests
         var content = await response.Content.ReadAsStringAsync();
         Assert.That(content, Is.EqualTo(expectedJson));
     }
+    [Test]
+    public async Task QueryLogsAsync_ReturnsNoResults_WhenLogEntriesAreOlderThanRange()
+    {
+        var client = new LokiLogExtractor.LokiClient("http://localhost:3100");
+
+        // First test: last 1 minute
+        var end = DateTimeOffset.UtcNow;
+        var start = end.AddMinutes(-1);
+        var query = "{level!=\"\"}"; // returns all logs with a 'level' label if any
+
+        var response = await client.QueryLogsAsync(start, end, query, CancellationToken.None);
+
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+
+        var body = await response.Content.ReadAsStringAsync();
+
+        // Loki returns resultType + result list; an empty result list means no logs
+        Assert.That(body, Does.Contain("\"result\":[]"));
+    }
+    [Test]
+    public async Task QueryLogsAsync_ReturnsThreeResults_WhenLogsAreInRange()
+    {
+        var client = new LokiLogExtractor.LokiClient("http://localhost:3100");
+
+        // These need to be adjusted to match your actual timestamps!
+        var end = DateTimeOffset.Now; 
+        var start = end.AddMinutes(-10);
+
+        var query = "{module=\"enter_loki_entries\"}";
+
+        var response = await client.QueryLogsAsync(start, end, query);
+
+        Assert.That(response.IsSuccessStatusCode, Is.True);
+
+        var body = await response.Content.ReadAsStringAsync();
+
+        // This will fail until we adjust timestamps and parse JSON correctly.
+        Assert.That(body, Does.Contain("\"result\":["), "Expected non-empty result list");
+    }
 
     private sealed class CapturingHttpMessageHandler : HttpMessageHandler
     {
