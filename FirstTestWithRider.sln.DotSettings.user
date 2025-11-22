@@ -1,0 +1,13 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=02037fad_002Decc7_002D4b30_002D9dd1_002D8e1bff3b764b/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Tests #2" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;NUnit3x::150FC724-ADEF-4AA7-9AD8-83AB9D20F9AE::net9.0::Tests.Tests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0dd3c548_002Df66b_002D42a8_002Da0bf_002Dba4fce939399/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Tests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
+  &lt;TestAncestor&gt;
+    &lt;TestId&gt;NUnit3x::150FC724-ADEF-4AA7-9AD8-83AB9D20F9AE::net9.0::Tests.Tests&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::150FC724-ADEF-4AA7-9AD8-83AB9D20F9AE::net9.0::LokiTimeHelperTests&lt;/TestId&gt;
+    &lt;TestId&gt;NUnit3x::150FC724-ADEF-4AA7-9AD8-83AB9D20F9AE::net9.0::LokiClient.Tests.LokiClientTests&lt;/TestId&gt;
+  &lt;/TestAncestor&gt;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
