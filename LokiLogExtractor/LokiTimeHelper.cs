@@ -1,4 +1,6 @@
-﻿namespace LokiLogExtractor;
+﻿using System;
+
+namespace LokiLogExtractor;
 
 public static class LokiTimeHelper
 {

@@ -122,26 +122,39 @@ public class LokiClientTests
 
         // Loki returns resultType + result list; an empty result list means no logs
         Assert.That(body, Does.Contain("\"result\":[]"));
+        Assert.That(body, Does.Contain("\"totalEntriesReturned\":0"));
+
     }
     [Test]
-    public async Task QueryLogsAsync_ReturnsThreeResults_WhenLogsAreInRange()
+    public async Task QueryLogsAsync_ReturnsFiveResults_WhenLogsAreInRange()
     {
         var client = new LokiLogExtractor.LokiClient("http://localhost:3100");
 
-        // These need to be adjusted to match your actual timestamps!
-        var end = DateTimeOffset.Now; 
-        var start = end.AddMinutes(-10);
+        var middle = DateTimeOffset.FromUnixTimeSeconds(1763819212); // 2025-11-22T13:46:52Z
+        var start = middle.AddSeconds(-10);
+        var end = middle.AddSeconds(10);
 
-        var query = "{module=\"enter_loki_entries\"}";
+        var query = "{service_name=\"loki_tester\"}";
 
-        var response = await client.QueryLogsAsync(start, end, query);
+        var response = await client.QueryLogsAsync(start, end, query, CancellationToken.None);
 
-        Assert.That(response.IsSuccessStatusCode, Is.True);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            var uri = response.RequestMessage?.RequestUri?.ToString() ?? "<null>";
 
-        var body = await response.Content.ReadAsStringAsync();
+            Assert.Fail(
+                $"Loki query failed.\n" +
+                $"Status: {(int)response.StatusCode} {response.StatusCode}\n" +
+                $"URI: {uri}\n" +
+                $"Body:\n{body}");
+        }
 
-        // This will fail until we adjust timestamps and parse JSON correctly.
-        Assert.That(body, Does.Contain("\"result\":["), "Expected non-empty result list");
+        var content = await response.Content.ReadAsStringAsync();
+        TestContext.WriteLine("Loki response body:");
+        TestContext.WriteLine(content);
+
+        Assert.That(content, Does.Contain("\"totalEntriesReturned\":5"));
     }
 
     private sealed class CapturingHttpMessageHandler : HttpMessageHandler

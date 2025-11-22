@@ -47,21 +47,16 @@ public sealed class LokiClient : ILokiClient, IDisposable
             throw new ArgumentException("End timestamp must be after start timestamp.");
         }
 
-        long startNs = ToUnixNanoseconds(start);
-        long endNs = ToUnixNanoseconds(end);
+        long startNs = LokiTimeHelper.ToUnixNanoseconds(start);
+        long endNs   = LokiTimeHelper.ToUnixNanoseconds(end);
 
-        var uriBuilder = new UriBuilder($"{_baseAddress}/loki/api/v1/query_range");
+        var uri = $"{_baseAddress}/loki/api/v1/query_range" +
+                  $"?query={Uri.EscapeDataString(query)}" +
+                  $"&start={startNs}" +
+                  $"&end={endNs}" +
+                  "&limit=1000";
 
-        string queryString =
-            $"query={Uri.EscapeDataString(query)}&start={startNs}&end={endNs}&limit=1000";
-
-        uriBuilder.Query = queryString;
-
-        var requestUri = uriBuilder.Uri;
-
-        HttpResponseMessage response = await _httpClient.GetAsync(requestUri, cancellationToken);
-
-        return response;
+        return await _httpClient.GetAsync(uri, cancellationToken);
     }
 
     private static long ToUnixNanoseconds(DateTimeOffset timestamp)
