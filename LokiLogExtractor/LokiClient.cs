@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,12 @@ namespace LokiLogExtractor;
 public interface ILokiClient
 {
     Task<HttpResponseMessage> QueryLogsAsync(
+        DateTimeOffset start,
+        DateTimeOffset end,
+        string query,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<LokiLogEntry>> GetLogsAsync(
         DateTimeOffset start,
         DateTimeOffset end,
         string query,
@@ -48,7 +55,7 @@ public sealed class LokiClient : ILokiClient, IDisposable
         }
 
         long startNs = LokiTimeHelper.ToUnixNanoseconds(start);
-        long endNs   = LokiTimeHelper.ToUnixNanoseconds(end);
+        long endNs = LokiTimeHelper.ToUnixNanoseconds(end);
 
         var uri = $"{_baseAddress}/loki/api/v1/query_range" +
                   $"?query={Uri.EscapeDataString(query)}" +
@@ -59,10 +66,30 @@ public sealed class LokiClient : ILokiClient, IDisposable
         return await _httpClient.GetAsync(uri, cancellationToken);
     }
 
-    private static long ToUnixNanoseconds(DateTimeOffset timestamp)
+    public async Task<IReadOnlyList<LokiLogEntry>> GetLogsAsync(
+        DateTimeOffset start,
+        DateTimeOffset end,
+        string query,
+        CancellationToken cancellationToken = default)
     {
-        long unixMilliseconds = timestamp.ToUnixTimeMilliseconds();
-        return unixMilliseconds * 1_000_000L;
+        var response = await QueryLogsAsync(start, end, query, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            var uri = response.RequestMessage?.RequestUri?.ToString() ?? "<null>";
+
+            throw new HttpRequestException(
+                $"Loki query failed with status {(int)response.StatusCode} {response.StatusCode}. " +
+                $"URI: {uri}. Body: {body}");
+        }
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        LokiQueryResponse model = LokiResponseParser.ParseQueryResponse(json);
+        IReadOnlyList<LokiLogEntry> entries = LokiLogFlattener.Flatten(model);
+
+        return entries;
     }
 
     public void Dispose()

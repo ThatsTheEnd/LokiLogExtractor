@@ -156,7 +156,21 @@ public class LokiClientTests
 
         Assert.That(content, Does.Contain("\"totalEntriesReturned\":5"));
     }
+    [Test]
+    public async Task GetLogsAsync_ReturnsEntriesInKnownWindow()
+    {
+        var client = new LokiLogExtractor.LokiClient("http://localhost:3100");
 
+        var middle = DateTimeOffset.FromUnixTimeSeconds(1763819212);
+        var start = middle.AddSeconds(-10);
+        var end = middle.AddSeconds(10);
+
+        const string query = "{application=\"BGTAS\"}"; // whatever works for you
+
+        IReadOnlyList<LokiLogEntry> entries = await client.GetLogsAsync(start, end, query);
+
+        Assert.That(entries.Count, Is.GreaterThanOrEqualTo(5)); // or == 5 if you want to be strict
+    }
     private sealed class CapturingHttpMessageHandler : HttpMessageHandler
     {
         public HttpRequestMessage? LastRequest { get; private set; }

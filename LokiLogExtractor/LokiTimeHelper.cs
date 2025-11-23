@@ -20,4 +20,14 @@ public static class LokiTimeHelper
 
         return unixSeconds * 1_000_000_000 + nanosWithinSecond;
     }
+
+    public static DateTimeOffset FromUnixNanoseconds(long nanoseconds)
+    {
+        long seconds = nanoseconds / 1_000_000_000;
+        long nanosRemainder = nanoseconds % 1_000_000_000;
+        long ticksRemainder = nanosRemainder / 100; // 1 tick = 100 ns
+
+        var baseTime = DateTimeOffset.FromUnixTimeSeconds(seconds);
+        return baseTime.AddTicks(ticksRemainder);
+    }
 }
